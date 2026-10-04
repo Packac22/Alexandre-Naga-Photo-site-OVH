@@ -12,7 +12,9 @@ if(photoDialog){
   function showPhoto(index){
     activePhoto=(index+photoButtons.length)%photoButtons.length;
     const original=photoButtons[activePhoto].querySelector('img');
-    largePhoto.src=original.src;
+    largePhoto.src=original.dataset.full || original.currentSrc || original.src;
+    largePhoto.width=Number(original.getAttribute('width'));
+    largePhoto.height=Number(original.getAttribute('height'));
     largePhoto.alt=original.alt;
     counter.textContent=`${activePhoto+1} / ${photoButtons.length}`;
   }

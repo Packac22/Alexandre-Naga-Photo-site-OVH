@@ -45,3 +45,6 @@
 .legal-identity p{margin:0;line-height:1.8;color:#5a5c54}
 .legal-identity a{text-decoration:underline;text-underline-offset:3px;color:var(--rust)}
 .legal-update{font-size:.78rem;margin-top:14px}
+
+/* Accueil mobile : respecter les proportions réelles de la photographie. */
+@media(max-width:850px){.hero-selected{aspect-ratio:auto}.hero-selected .hero-photo{height:auto}}
