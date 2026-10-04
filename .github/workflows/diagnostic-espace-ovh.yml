@@ -1,0 +1,42 @@
+name: Diagnostic espace OVH
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ovh-diagnostic
+  cancel-in-progress: false
+
+jobs:
+  diagnostic:
+    name: Mesurer les dossiers OVH
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Installer lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Afficher les dossiers et leurs tailles
+        env:
+          LFTP_PASSWORD: ${{ secrets.OVH_SFTP_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$LFTP_PASSWORD"
+          lftp <<'LFTP'
+          set cmd:fail-exit yes
+          set net:timeout 30
+          set net:max-retries 2
+          set sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=accept-new"
+          open --env-password -u alexawb sftp://ftp.cluster129.hosting.ovh.net:22
+          cd /home/alexawb
+          pwd
+          cls -la
+          du -a -h --max-depth=2 .
+          bye
+          LFTP
