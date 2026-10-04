@@ -1,3 +1,10 @@
+# Adresse principale : HTTPS sans www
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^www\.alexandrenagaphoto\.fr$ [NC]
+    RewriteRule ^ https://alexandrenagaphoto.fr%{REQUEST_URI} [R=301,L]
+</IfModule>
+
 # Cache navigateur - Alexandre Naga Photo
 # Pages et code : verifier les mises a jour a chaque utilisation.
 # Photos : cache de 24 heures. Renommer une image pour la remplacer immediatement.
