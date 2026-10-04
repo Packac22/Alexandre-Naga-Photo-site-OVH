@@ -51,3 +51,15 @@
 
 /* Lisibilité : textes secondaires et petits textes bruns sur fond clair. */
 .service-price,.service-list>div>span,.legal-section a,.legal-identity a,.photo-placeholder small{color:#805334}
+
+/* Galeries : une introduction plus compacte pour accéder rapidement aux photos. */
+.portrait-page{padding-top:56px}
+.portrait-page .portrait-intro{margin:40px 0 40px}
+.portrait-page .portrait-intro h1{font-size:clamp(3.2rem,6vw,6rem);margin:22px 0}
+.portrait-page .event-nav{margin-bottom:36px}
+@media(max-width:620px){
+  .portrait-page{padding-top:32px}
+  .portrait-page .portrait-intro{margin:28px 0 30px}
+  .portrait-page .portrait-intro h1{font-size:clamp(3rem,11vw,4rem);margin:20px 0}
+  .portrait-page .event-nav{margin-bottom:30px}
+}
