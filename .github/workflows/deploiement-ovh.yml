@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ovh-preview
+  group: ovh-production
   cancel-in-progress: false
 
 jobs:
@@ -46,6 +46,6 @@ jobs:
           set net:max-retries 2
           set sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=accept-new"
           open --env-password -u alexawb sftp://ftp.cluster129.hosting.ovh.net:22
-          mirror --reverse --verbose --parallel=1 --no-perms --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitattributes --exclude-glob README* . /home/alexawb/www/preview
+          mirror --reverse --verbose --parallel=1 --no-perms --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitattributes --exclude-glob README* . /home/alexawb/www
           bye
           LFTP
