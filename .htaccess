@@ -1,22 +1,14 @@
-RewriteEngine On
-
-RewriteCond %{HTTPS} !=on
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
 # Cache navigateur - Alexandre Naga Photo
-# Pages et code : vérifier les mises à jour à chaque utilisation
-# Photos : cache de 24 heures. Renommer une image pour la remplacer immédiatement.
+# Pages et code : verifier les mises a jour a chaque utilisation.
+# Photos : cache de 24 heures. Renommer une image pour la remplacer immediatement.
 # Polices : cache de 30 jours. Renommer une police si son contenu change.
-
 <IfModule mod_headers.c>
     <FilesMatch "\.(html?|css|js)$">
         Header set Cache-Control "no-cache"
     </FilesMatch>
-
     <FilesMatch "\.(webp|jpe?g|png|gif|avif|svg|ico)$">
         Header set Cache-Control "public, max-age=86400"
     </FilesMatch>
-
     <FilesMatch "\.(woff2?|ttf|otf)$">
         Header set Cache-Control "public, max-age=2592000"
     </FilesMatch>
