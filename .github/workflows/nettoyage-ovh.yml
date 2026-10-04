@@ -1,0 +1,112 @@
+name: Nettoyage anciennes copies OVH
+'on':
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: ovh-production
+  cancel-in-progress: false
+jobs:
+  nettoyage:
+    name: Nettoyer les anciennes copies
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - name: Recuperer le depot
+      uses: actions/checkout@v6
+      with:
+        persist-credentials: false
+    - name: Installer lftp
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y lftp
+    - name: Comparer les deux copies avant suppression
+      env:
+        LFTP_PASSWORD: ${{ secrets.OVH_SFTP_PASSWORD }}
+      run: |
+        set -euo pipefail
+        test -n "$LFTP_PASSWORD"
+        lftp <<'LFTP'
+        set cmd:fail-exit yes
+        set net:timeout 30
+        set net:max-retries 2
+        set sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=accept-new"
+        open --env-password -u alexawb sftp://ftp.cluster129.hosting.ovh.net:22
+        mirror --parallel=2 --no-perms --exclude-glob .git/ --exclude-glob .github/ /home/alexawb/www/preview /tmp/ovh-audit/preview
+        mirror --parallel=2 --no-perms --exclude-glob .git/ --exclude-glob .github/ --exclude-glob preview/ /home/alexawb/www /tmp/ovh-audit/principal
+        bye
+        LFTP
+    - name: Verifier que toutes les anciennes photos existent sur le site principal
+      run: |
+        set -euo pipefail
+        python - <<'PYTHON'
+        from pathlib import Path
+        import hashlib
+        preview=Path('/tmp/ovh-audit/preview')
+        principal=Path('/tmp/ovh-audit/principal')
+        required=['index.html','cgv.html','politique-confidentialite.html','styles.css','script.js','formulaire-retractation.txt']
+        for n in required:
+            assert (principal/n).is_file(), 'Fichier principal absent : '+n
+        assert (principal/'assets').is_dir(), 'Assets principaux absents'
+        assert sorted(str(x.relative_to(Path('preview'))) for x in Path('preview').rglob('*') if x.is_file())==['.htaccess'], 'Le dossier preview local doit uniquement contenir .htaccess'
+        conflicts=[]
+        count=0
+        for old in preview.rglob('*'):
+            if not old.is_file():
+                continue
+            rel=old.relative_to(preview)
+            if rel.as_posix()=='.htaccess':
+                continue
+            new=principal/rel
+            if not new.is_file() or hashlib.sha256(old.read_bytes()).digest()!=hashlib.sha256(new.read_bytes()).digest():
+                conflicts.append(str(rel))
+            count+=1
+        if conflicts:
+            raise SystemExit('NETTOYAGE ANNULE : fichiers absents ou differents dans le site principal : '+', '.join(conflicts))
+        print(str(count)+' fichiers de preview retrouves a l’identique sur le site principal. Nettoyage autorise.')
+        PYTHON
+    - name: Verifier la redirection avant nettoyage
+      run: |
+        set -euo pipefail
+        python - <<'PYTHON'
+        import urllib.request
+        base='https://alexandrenagaphoto.fr'
+        for path in ['/','/cgv.html','/formulaire-retractation.txt','/preview/cgv.html','/preview/assets/web/portraits/IMG_2679-960.webp']:
+            with urllib.request.urlopen(base+path,timeout=30) as response:
+                assert response.status==200, path
+                if path.startswith('/preview/'):
+                    assert response.url==base+path[len('/preview'):], (path,response.url)
+                print(str(response.status)+' '+path+' -> '+response.url)
+        PYTHON
+    - name: Supprimer uniquement les anciennes copies OVH
+      env:
+        LFTP_PASSWORD: ${{ secrets.OVH_SFTP_PASSWORD }}
+      run: |
+        set -euo pipefail
+        test -n "$LFTP_PASSWORD"
+        lftp <<'LFTP'
+        set cmd:fail-exit yes
+        set net:timeout 30
+        set net:max-retries 2
+        set sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=accept-new"
+        open --env-password -u alexawb sftp://ftp.cluster129.hosting.ovh.net:22
+        cls /home/alexawb/www/index.html
+        cls /home/alexawb/www/assets
+        mirror --reverse --delete --verbose --no-perms preview /home/alexawb/www/preview
+        rm -r -f /home/alexawb/www/.git
+        du -h --max-depth=2 /home/alexawb/www
+        bye
+        LFTP
+    - name: Verifier le site apres nettoyage
+      run: |
+        set -euo pipefail
+        python - <<'PYTHON'
+        import urllib.request
+        base='https://alexandrenagaphoto.fr'
+        for path in ['/','/cgv.html','/formulaire-retractation.txt','/preview/cgv.html','/preview/assets/web/portraits/IMG_2679-960.webp']:
+            with urllib.request.urlopen(base+path,timeout=30) as response:
+                assert response.status==200, path
+                if path.startswith('/preview/'):
+                    assert response.url==base+path[len('/preview'):], (path,response.url)
+                print(str(response.status)+' '+path+' -> '+response.url)
+        PYTHON

@@ -1,0 +1,3 @@
+# Anciennes adresses : redirection permanente vers le site principal.
+RedirectMatch 301 ^/preview/?$ https://alexandrenagaphoto.fr/
+RedirectMatch 301 ^/preview/(.*)$ https://alexandrenagaphoto.fr/$1
