@@ -1,7 +1,19 @@
-# Adresse principale : HTTPS sans www
+# Protection des fichiers techniques du depot
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteRule (^|/)\.git(?:hub)?(?:/|$) - [F,L,NC]
+    RewriteRule (^|/)\.gitattributes$ - [F,L,NC]
+
+    # Laisser accessibles les validations de certificat Let's Encrypt.
+    RewriteRule ^\.well-known/acme-challenge/ - [L]
+
+    # Adresse principale : HTTPS sans www, en conservant le chemin.
     RewriteCond %{HTTP_HOST} ^www\.alexandrenagaphoto\.fr$ [NC]
+    RewriteRule ^ https://alexandrenagaphoto.fr%{REQUEST_URI} [R=301,L]
+
+    # Prendre en compte une eventuelle terminaison TLS chez OVH.
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !^https$ [NC]
     RewriteRule ^ https://alexandrenagaphoto.fr%{REQUEST_URI} [R=301,L]
 </IfModule>
 

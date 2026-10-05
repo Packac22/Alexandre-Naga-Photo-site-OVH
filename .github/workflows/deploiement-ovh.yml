@@ -29,6 +29,9 @@ jobs:
           test -f styles.css
           test -f script.js
           test -d assets
+          test -f .htaccess
+          test -f robots.txt
+          test -f sitemap.xml
 
       - name: Installer le logiciel de transfert
         run: |
@@ -47,5 +50,7 @@ jobs:
           set sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=accept-new"
           open --env-password -u alexawb sftp://ftp.cluster129.hosting.ovh.net:22
           mirror --reverse --verbose --parallel=1 --no-perms --exclude-glob .git/ --exclude-glob .github/ --exclude-glob .gitattributes --exclude-glob README* . /home/alexawb/www
+          # Supprimer uniquement la copie publique des workflows sur OVH.
+          rm -rf /home/alexawb/www/.github
           bye
           LFTP
