@@ -58,6 +58,7 @@ img{display:block;width:100%;height:auto}
 .services{background:#e9e7e0}
 .services-grid{display:grid;grid-template-columns:1fr 1fr;gap:9%;padding-top:83px}
 .services-heading p{max-width:410px;line-height:1.9;color:#5a5c54;margin-top:45px}
+.services-heading strong{font-weight:600;color:var(--ink)}
 .service-list>div{position:relative;padding:22px 0 24px 48px;border-top:1px solid #c7c6bf}
 .service-list>div:last-child{border-bottom:1px solid #c7c6bf}
 .service-list span{position:absolute;left:0;top:26px;color:var(--rust);font-size:.75rem}
